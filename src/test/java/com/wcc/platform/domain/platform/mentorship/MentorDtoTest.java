@@ -13,7 +13,9 @@ import com.wcc.platform.domain.cms.attributes.Languages;
 import com.wcc.platform.domain.cms.attributes.MentorshipFocusArea;
 import com.wcc.platform.domain.cms.attributes.TechnicalArea;
 import com.wcc.platform.domain.cms.pages.mentorship.MenteeSection;
-import com.wcc.platform.domain.cms.pages.mentorship.MentorMonthAvailability;
+import com.wcc.platform.domain.cms.pages.mentorship.MentorAdHocAvailability;
+import com.wcc.platform.domain.cms.pages.mentorship.MentorLongTermAvailability;
+import com.wcc.platform.domain.cms.pages.mentorship.MentorOverallAvailability;
 import com.wcc.platform.domain.exceptions.InvalidMentorException;
 import com.wcc.platform.domain.platform.SocialNetwork;
 import com.wcc.platform.domain.platform.member.ProfileStatus;
@@ -55,7 +57,9 @@ class MentorDtoTest {
             .menteeSection(
                 new MenteeSection(
                     List.of(MentorshipType.LONG_TERM),
-                    List.of(new MentorMonthAvailability(Month.JANUARY, 2)),
+                    new MentorOverallAvailability(
+                        new MentorLongTermAvailability(2, 4),
+                        List.of(new MentorAdHocAvailability(Month.JANUARY, 2))),
                     "Original ideal mentee",
                     "Original additional info"))
             .build();
@@ -124,7 +128,9 @@ class MentorDtoTest {
             .menteeSection(
                 new MenteeSection(
                     List.of(MentorshipType.AD_HOC),
-                    List.of(new MentorMonthAvailability(Month.JUNE, 3)),
+                    new MentorOverallAvailability(
+                        new MentorLongTermAvailability(2, 4),
+                        List.of(new MentorAdHocAvailability(Month.JUNE, 3))),
                     "New ideal mentee",
                     "New additional info"))
             .build();
@@ -218,7 +224,12 @@ class MentorDtoTest {
             .profileStatus(ProfileStatus.ACTIVE)
             .bio("Bio")
             .skills(new Skills(5, List.of(), List.of(), List.of()))
-            .menteeSection(new MenteeSection(List.of(), List.of(), "ideal", "additional"))
+            .menteeSection(
+                new MenteeSection(
+                    List.of(),
+                    new MentorOverallAvailability(new MentorLongTermAvailability(0, 0), List.of()),
+                    "ideal",
+                    "additional"))
             .spokenLanguages(null)
             .city(null)
             .companyName(null)
@@ -270,9 +281,11 @@ class MentorDtoTest {
     MenteeSection newMenteeSection =
         new MenteeSection(
             List.of(MentorshipType.AD_HOC, MentorshipType.LONG_TERM),
-            List.of(
-                new MentorMonthAvailability(Month.MARCH, 4),
-                new MentorMonthAvailability(Month.APRIL, 5)),
+            new MentorOverallAvailability(
+                new MentorLongTermAvailability(2, 4),
+                List.of(
+                    new MentorAdHocAvailability(Month.MARCH, 4),
+                    new MentorAdHocAvailability(Month.APRIL, 5))),
             "Updated ideal mentee",
             "Updated additional");
 
@@ -283,8 +296,10 @@ class MentorDtoTest {
     assertEquals("Updated ideal mentee", result.getMenteeSection().idealMentee());
     assertEquals("Updated additional", result.getMenteeSection().additional());
     assertEquals(2, result.getMenteeSection().mentorshipType().size());
-    assertEquals(2, result.getMenteeSection().availability().size());
-    assertEquals(Month.MARCH, result.getMenteeSection().availability().getFirst().month());
+    assertEquals(2, result.getMenteeSection().availability().getAdHocAvailability().size());
+    assertEquals(
+        Month.MARCH,
+        result.getMenteeSection().availability().getAdHocAvailability().getFirst().month());
   }
 
   @Test

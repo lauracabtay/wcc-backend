@@ -8,4 +8,4 @@ import java.time.Month;
  * @param month which months eg: MAY, JUNE
  * @param hours number of hours available eg: 2
  */
-public record MentorMonthAvailability(Month month, Integer hours) {}
+public record MentorAdHocAvailability(Month month, Integer hours) {}

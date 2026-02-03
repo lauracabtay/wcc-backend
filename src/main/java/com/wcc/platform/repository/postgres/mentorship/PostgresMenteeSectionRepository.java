@@ -3,7 +3,9 @@ package com.wcc.platform.repository.postgres.mentorship;
 import static com.wcc.platform.repository.postgres.constants.MentorConstants.*;
 
 import com.wcc.platform.domain.cms.pages.mentorship.MenteeSection;
-import com.wcc.platform.domain.cms.pages.mentorship.MentorMonthAvailability;
+import com.wcc.platform.domain.cms.pages.mentorship.MentorAdHocAvailability;
+import com.wcc.platform.domain.cms.pages.mentorship.MentorLongTermAvailability;
+import com.wcc.platform.domain.cms.pages.mentorship.MentorOverallAvailability;
 import com.wcc.platform.domain.platform.mentorship.MentorshipType;
 import com.wcc.platform.repository.MenteeSectionRepository;
 import java.time.Month;
@@ -28,6 +30,16 @@ public class PostgresMenteeSectionRepository implements MenteeSectionRepository 
       "UPDATE mentor_mentee_section SET ideal_mentee = ?, additional = ? WHERE mentor_id = ?";
   public static final String UPDATE_AVAILABILITY =
       "UPDATE mentor_availability SET " + "month_num = ?, " + "hours = ? " + "WHERE mentor_id = ?";
+  public static final String UPDATE_AD_HOC_AVAILABILITY =
+      "UPDATE mentor_ad_hoc_availability SET "
+          + "month_num = ?, "
+          + "hours = ? "
+          + "WHERE mentor_id = ?";
+  public static final String UPDATE_LONG_TERM_AVAILABILITY =
+      "UPDATE mentor_long_term_availability SET "
+          + "num_mentee = ?, "
+          + "hours = ? "
+          + "WHERE mentor_id = ?";
   public static final String INSERT_MENTOR_TYPES =
       "INSERT INTO mentor_mentorship_types (mentor_id, mentorship_type) VALUES (?, ?)";
   public static final String DELETE_MENTOR_TYPES =
@@ -43,6 +55,10 @@ public class PostgresMenteeSectionRepository implements MenteeSectionRepository 
       "INSERT INTO mentor_mentee_section (mentor_id, ideal_mentee, additional) VALUES (?, ?, ?)";
   private static final String INSERT_AVAILABILITY =
       "INSERT INTO mentor_availability (mentor_id, month_num, hours) VALUES (?, ?, ?)";
+  private static final String INSERT_AD_HOC_AVAILABILITY =
+      "INSERT INTO mentor_ad_hoc_availability (mentor_id, month_num, hours) VALUES (?, ?, ?)";
+  private static final String INSERT_LONG_TERM_AVAILABILITY =
+      "INSERT INTO mentor_long_termavailability (mentor_id, num_mentee, hours) VALUES (?, ?, ?)";
   private final JdbcTemplate jdbc;
 
   /** Inserts the mentee section details for the mentor. */
@@ -95,18 +111,47 @@ public class PostgresMenteeSectionRepository implements MenteeSectionRepository 
         mentorId);
   }
 
-  private List<MentorMonthAvailability> loadAvailability(final Long mentorId) {
+  private MentorOverallAvailability loadAvailability(final Long mentorId) {
+    MentorLongTermAvailability longTermAvailability = loadLongTermAvailability(mentorId);
+    List<MentorAdHocAvailability> adHocAvailability = loadAdHocAvailability(mentorId);
+
+    return new MentorOverallAvailability(longTermAvailability, adHocAvailability);
+  }
+
+  private List<MentorAdHocAvailability> loadAdHocAvailability(final Long mentorId) {
     return jdbc.query(
         SQL_AVAILABILITY,
         (rs, rowNum) ->
-            new MentorMonthAvailability(Month.of(rs.getInt(COLUMN_MONTH)), rs.getInt(COLUMN_HOURS)),
+            new MentorAdHocAvailability(
+                Month.of(rs.getInt(COLUMN_MONTH)), rs.getInt(COLUMN_AD_HOC_HOURS)),
+        mentorId);
+  }
+
+  private MentorLongTermAvailability loadLongTermAvailability(final Long mentorId) {
+    return jdbc.queryForObject(
+        SQL_AVAILABILITY,
+        (rs, rowNum) ->
+            new MentorLongTermAvailability(
+                rs.getInt(COLUMN_NUM_MENTEE), rs.getInt(COLUMN_LONG_TERM_HOURS)),
         mentorId);
   }
 
   private void insertAvailability(final MenteeSection ms, final Long memberId) {
-    for (final MentorMonthAvailability a : ms.availability()) {
-      jdbc.update(INSERT_AVAILABILITY, memberId, a.month().getValue(), a.hours());
+    MentorOverallAvailability availability = ms.availability();
+    insertLongTermAvailability(availability.getLongTermAvailability(), memberId);
+    insertAdHocAvailability(availability.getAdHocAvailability(), memberId);
+  }
+
+  private void insertAdHocAvailability(
+      final List<MentorAdHocAvailability> adHoc, final Long memberId) {
+    for (final MentorAdHocAvailability ah : adHoc) {
+      jdbc.update(INSERT_AD_HOC_AVAILABILITY, memberId, ah.month().getValue(), ah.hours());
     }
+  }
+
+  private void insertLongTermAvailability(
+      final MentorLongTermAvailability longTerm, final Long memberId) {
+    jdbc.update(INSERT_LONG_TERM_AVAILABILITY, memberId, longTerm.numMentee(), longTerm.hours());
   }
 
   private void insertMentorshipTypes(final MenteeSection ms, final Long memberId) {
@@ -116,8 +161,20 @@ public class PostgresMenteeSectionRepository implements MenteeSectionRepository 
   }
 
   private void updateAvailability(final MenteeSection ms, final Long memberId) {
-    for (final MentorMonthAvailability a : ms.availability()) {
-      jdbc.update(UPDATE_AVAILABILITY, a.month().getValue(), a.hours(), memberId);
+    MentorOverallAvailability availability = ms.availability();
+    updateLongTermAvailability(availability.getLongTermAvailability(), memberId);
+    updateAdHocAvailability(availability.getAdHocAvailability(), memberId);
+  }
+
+  private void updateAdHocAvailability(
+      final List<MentorAdHocAvailability> adHoc, final Long memberId) {
+    for (final MentorAdHocAvailability a : adHoc) {
+      jdbc.update(UPDATE_AD_HOC_AVAILABILITY, a.month().getValue(), a.hours(), memberId);
     }
+  }
+
+  private void updateLongTermAvailability(
+      final MentorLongTermAvailability longTerm, final Long memberId) {
+    jdbc.update(UPDATE_LONG_TERM_AVAILABILITY, longTerm.numMentee(), longTerm.hours(), memberId);
   }
 }

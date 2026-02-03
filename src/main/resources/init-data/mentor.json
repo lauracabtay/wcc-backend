@@ -49,33 +49,39 @@
       "LONG_TERM",
       "AD_HOC"
     ],
-    "availability": [
-      {
-        "month": 6,
-        "hours": 2
-      },
-      {
-        "month": 7,
-        "hours": 2
-      },
-      {
-        "month": 8,
-        "hours": 2
-      },
-      {
-        "month": 9,
-        "hours": 2
-      },
-      {
-        "month": 10,
-        "hours": 2
-      },
-      {
-        "month": 11,
-        "hours": 2
-      }
-    ],
     "idealMentee": "Someone willing to learn new technologies or to improve current skills",
-    "additional": "Spring Boot and Best Practices"
+    "additional": "Spring Boot and Best Practices",
+    "availability": {
+      "longTerm": {
+        "numMentee": 2,
+        "hours": 8
+      },
+      "adHoc": [
+        {
+          "month": 6,
+          "hours": 2
+        },
+        {
+          "month": 7,
+          "hours": 2
+        },
+        {
+          "month": 8,
+          "hours": 2
+        },
+        {
+          "month": 9,
+          "hours": 2
+        },
+        {
+          "month": 10,
+          "hours": 2
+        },
+        {
+          "month": 11,
+          "hours": 2
+        }
+      ]
+    }
   }
 }

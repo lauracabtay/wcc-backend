@@ -102,14 +102,16 @@ public class Mentor extends Member {
     final var mentorBuilder = buildFromMentor(mentor);
 
     if (mentor.getMenteeSection().mentorshipType().contains(mentorshipCycle.cycle())) {
+      final var longTermAvailability =
+          mentor.getMenteeSection().availability().getLongTermAvailability();
+      final var adHocAvailability = mentor.getMenteeSection().availability().getAdHocAvailability();
 
       final var isAvailable =
-          mentor.getMenteeSection().availability().stream()
-              .filter(availability -> availability.month() == mentorshipCycle.month())
-              .findAny();
+          longTermAvailability != null
+              || adHocAvailability.stream()
+                  .anyMatch(availability -> availability.month() == mentorshipCycle.month());
 
-      mentorBuilder.availability(
-          new MentorAvailability(mentorshipCycle.cycle(), isAvailable.isPresent()));
+      mentorBuilder.availability(new MentorAvailability(mentorshipCycle.cycle(), isAvailable));
     }
 
     return mentorBuilder.build();

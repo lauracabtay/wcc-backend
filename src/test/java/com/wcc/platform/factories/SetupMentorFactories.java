@@ -9,7 +9,9 @@ import com.wcc.platform.domain.cms.attributes.Languages;
 import com.wcc.platform.domain.cms.attributes.MentorshipFocusArea;
 import com.wcc.platform.domain.cms.attributes.TechnicalArea;
 import com.wcc.platform.domain.cms.pages.mentorship.MenteeSection;
-import com.wcc.platform.domain.cms.pages.mentorship.MentorMonthAvailability;
+import com.wcc.platform.domain.cms.pages.mentorship.MentorAdHocAvailability;
+import com.wcc.platform.domain.cms.pages.mentorship.MentorLongTermAvailability;
+import com.wcc.platform.domain.cms.pages.mentorship.MentorOverallAvailability;
 import com.wcc.platform.domain.platform.SocialNetwork;
 import com.wcc.platform.domain.platform.SocialNetworkType;
 import com.wcc.platform.domain.platform.member.Member;
@@ -62,7 +64,9 @@ public class SetupMentorFactories {
             .menteeSection(
                 new MenteeSection(
                     List.of(MentorshipType.LONG_TERM),
-                    List.of(new MentorMonthAvailability(Month.APRIL, 2)),
+                    new MentorOverallAvailability(
+                        new MentorLongTermAvailability(2, 4),
+                        List.of(new MentorAdHocAvailability(Month.APRIL, 2))),
                     "ideal mentee description",
                     "additional"));
     if (mentorId != null) {
@@ -102,7 +106,9 @@ public class SetupMentorFactories {
         .menteeSection(
             new MenteeSection(
                 List.of(MentorshipType.LONG_TERM),
-                List.of(new MentorMonthAvailability(Month.MARCH, 2)),
+                new MentorOverallAvailability(
+                    new MentorLongTermAvailability(2, 4),
+                    List.of(new MentorAdHocAvailability(Month.MARCH, 2))),
                 "ideal mentee description",
                 "additional"))
         .build();
@@ -113,7 +119,7 @@ public class SetupMentorFactories {
       final Long mentorId,
       final MemberType type,
       final List<MentorshipType> mentorshipTypes,
-      final List<MentorMonthAvailability> availabilities) {
+      final MentorOverallAvailability availabilities) {
     return MentorDto.mentorDtoBuilder()
         .id(mentorId)
         .fullName("fullName " + type.name())
@@ -163,7 +169,9 @@ public class SetupMentorFactories {
         .menteeSection(
             new MenteeSection(
                 List.of(MentorshipType.AD_HOC),
-                List.of(new MentorMonthAvailability(Month.JUNE, 2)),
+                new MentorOverallAvailability(
+                    new MentorLongTermAvailability(2, 4),
+                    List.of(new MentorAdHocAvailability(Month.JUNE, 2))),
                 "ideal mentee description UPDATED",
                 "additional UPDATED"))
         .build();
@@ -174,7 +182,7 @@ public class SetupMentorFactories {
       final Mentor mentor,
       final MentorDto mentorDto,
       final List<MentorshipType> mentorshipTypes,
-      final List<MentorMonthAvailability> availabilities) {
+      final MentorOverallAvailability availabilities) {
 
     return Mentor.mentorBuilder()
         .id(mentor.getId())

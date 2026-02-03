@@ -5,7 +5,9 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import com.wcc.platform.domain.cms.pages.mentorship.MenteeSection;
-import com.wcc.platform.domain.cms.pages.mentorship.MentorMonthAvailability;
+import com.wcc.platform.domain.cms.pages.mentorship.MentorAdHocAvailability;
+import com.wcc.platform.domain.cms.pages.mentorship.MentorLongTermAvailability;
+import com.wcc.platform.domain.cms.pages.mentorship.MentorOverallAvailability;
 import com.wcc.platform.domain.platform.mentorship.MentorshipType;
 import com.wcc.platform.repository.postgres.mentorship.PostgresMenteeSectionRepository;
 import java.time.Month;
@@ -34,10 +36,14 @@ class PostgresMenteeSectionRepositoryTest {
 
     List<MentorshipType> mentorshipTypes = List.of(MentorshipType.LONG_TERM, MentorshipType.AD_HOC);
 
-    List<MentorMonthAvailability> availability =
-        List.of(
-            new MentorMonthAvailability(Month.JANUARY, 2),
-            new MentorMonthAvailability(Month.FEBRUARY, 3));
+    MentorLongTermAvailability longTermAvailability = new MentorLongTermAvailability(4, 10);
+
+    MentorOverallAvailability availability =
+        new MentorOverallAvailability(
+            longTermAvailability,
+            List.of(
+                new MentorAdHocAvailability(Month.JANUARY, 2),
+                new MentorAdHocAvailability(Month.FEBRUARY, 3)));
 
     menteeSection =
         new MenteeSection(
@@ -121,7 +127,9 @@ class PostgresMenteeSectionRepositoryTest {
     MenteeSection emptyTypesSection =
         new MenteeSection(
             List.of(), // Empty mentorship types
-            List.of(new MentorMonthAvailability(Month.APRIL, 1)),
+            new MentorOverallAvailability(
+                new MentorLongTermAvailability(2, 4),
+                List.of(new MentorAdHocAvailability(Month.APRIL, 1))),
             "Ideal mentee",
             "Additional");
 
@@ -136,14 +144,51 @@ class PostgresMenteeSectionRepositoryTest {
   void testUpdateMenteeSectionWithEmptyAvailability() {
     MenteeSection emptyAvailabilitySection =
         new MenteeSection(
-            List.of(MentorshipType.AD_HOC),
-            List.of(), // Empty availability
+            List.of(MentorshipType.AD_HOC, MentorshipType.LONG_TERM),
+            new MentorOverallAvailability(
+                new MentorLongTermAvailability(0, 0), // Empty long term availability
+                List.of() // Empty ad hoc availability
+                ),
             "Ideal mentee",
             "Additional");
 
     menteeSecRepo.updateMenteeSection(emptyAvailabilitySection, mentorId);
 
     verify(jdbc, never()).update(contains(UPDATE_AVAILABILITY), anyInt(), anyInt(), anyLong());
+  }
+
+  @Test
+  void testUpdateMenteeSectionWithEmptyAdHocAvailability() {
+    MenteeSection emptyAvailabilitySection =
+        new MenteeSection(
+            List.of(MentorshipType.AD_HOC),
+            new MentorOverallAvailability(
+                new MentorLongTermAvailability(2, 4), List.of() // Empty ad hoc availability
+                ),
+            "Ideal mentee",
+            "Additional");
+
+    menteeSecRepo.updateMenteeSection(emptyAvailabilitySection, mentorId);
+
+    verify(jdbc, never())
+        .update(contains(UPDATE_AD_HOC_AVAILABILITY), anyInt(), anyInt(), anyLong());
+  }
+
+  @Test
+  void testUpdateMenteeSectionWithEmptyLongTermAvailability() {
+    MenteeSection emptyAvailabilitySection =
+        new MenteeSection(
+            List.of(MentorshipType.LONG_TERM),
+            new MentorOverallAvailability(
+                new MentorLongTermAvailability(0, 0), // Empty long term availability
+                List.of(new MentorAdHocAvailability(Month.APRIL, 1))),
+            "Ideal mentee",
+            "Additional");
+
+    menteeSecRepo.updateMenteeSection(emptyAvailabilitySection, mentorId);
+
+    verify(jdbc, never())
+        .update(contains(UPDATE_LONG_TERM_AVAILABILITY), anyInt(), anyInt(), anyLong());
   }
 
   @Test

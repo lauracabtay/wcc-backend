@@ -5,16 +5,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.time.Month;
 import org.junit.jupiter.api.Test;
 
-class MentorMonthAvailabilityTest {
+class MentorAdHocAvailabilityTest {
 
   @Test
   void testAvailabilityRecord() {
     Month month = Month.of(5);
     Integer hours = 2;
 
-    MentorMonthAvailability mentorMonthAvailability = new MentorMonthAvailability(month, hours);
+    MentorAdHocAvailability mentorAdHocAvailability = new MentorAdHocAvailability(month, hours);
 
-    assertEquals("MAY", mentorMonthAvailability.month().toString());
-    assertEquals(hours, mentorMonthAvailability.hours());
+    assertEquals("MAY", mentorAdHocAvailability.month().toString());
+    assertEquals(hours, mentorAdHocAvailability.hours());
   }
 }

@@ -8,7 +8,7 @@ import com.wcc.platform.domain.cms.attributes.Languages;
 import com.wcc.platform.domain.cms.attributes.MentorshipFocusArea;
 import com.wcc.platform.domain.cms.attributes.TechnicalArea;
 import com.wcc.platform.domain.cms.pages.mentorship.MenteeSection;
-import com.wcc.platform.domain.cms.pages.mentorship.MentorMonthAvailability;
+import com.wcc.platform.domain.cms.pages.mentorship.MentorAdHocAvailability;
 import com.wcc.platform.domain.cms.pages.mentorship.MentorsPage;
 import com.wcc.platform.domain.platform.member.Member;
 import com.wcc.platform.domain.platform.member.ProfileStatus;
@@ -90,7 +90,7 @@ class MentorshipPagesControllerRestTemplateIntegrationTest extends DefaultDataba
             .menteeSection(
                 new MenteeSection(
                     List.of(MentorshipType.AD_HOC),
-                    List.of(new MentorMonthAvailability(Month.MAY, 2)),
+                    List.of(new MentorAdHocAvailability(Month.MAY, 2)),
                     "ideal",
                     "additional"))
             .build();
@@ -124,7 +124,7 @@ class MentorshipPagesControllerRestTemplateIntegrationTest extends DefaultDataba
             .menteeSection(
                 new MenteeSection(
                     List.of(MentorshipType.LONG_TERM),
-                    List.of(new MentorMonthAvailability(Month.MARCH, 1)),
+                    List.of(new MentorAdHocAvailability(Month.MARCH, 1)),
                     "ideal",
                     "additional"))
             .build();

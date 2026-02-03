@@ -10,8 +10,10 @@ import com.wcc.platform.domain.cms.attributes.Languages;
 import com.wcc.platform.domain.cms.attributes.MentorshipFocusArea;
 import com.wcc.platform.domain.cms.attributes.TechnicalArea;
 import com.wcc.platform.domain.cms.pages.mentorship.MenteeSection;
+import com.wcc.platform.domain.cms.pages.mentorship.MentorAdHocAvailability;
 import com.wcc.platform.domain.cms.pages.mentorship.MentorAppliedFilters;
-import com.wcc.platform.domain.cms.pages.mentorship.MentorMonthAvailability;
+import com.wcc.platform.domain.cms.pages.mentorship.MentorLongTermAvailability;
+import com.wcc.platform.domain.cms.pages.mentorship.MentorOverallAvailability;
 import com.wcc.platform.domain.cms.pages.mentorship.MentorsPage;
 import com.wcc.platform.domain.platform.member.Member;
 import com.wcc.platform.domain.platform.member.ProfileStatus;
@@ -157,7 +159,9 @@ class MentorshipServiceFilteringTest {
         .menteeSection(
             new MenteeSection(
                 types,
-                List.of(new MentorMonthAvailability(availableMonth, 2)),
+                new MentorOverallAvailability(
+                    new MentorLongTermAvailability(2, 4),
+                    List.of(new MentorAdHocAvailability(availableMonth, 2))),
                 "ideal",
                 "additional"))
         .build();
