@@ -3,6 +3,7 @@ package com.wcc.platform.service;
 import com.wcc.platform.configuration.NotificationConfig;
 import com.wcc.platform.domain.email.EmailRequest;
 import com.wcc.platform.domain.exceptions.EmailSendException;
+import com.wcc.platform.domain.platform.mentorship.Mentee;
 import com.wcc.platform.domain.platform.mentorship.Mentor;
 import com.wcc.platform.domain.template.TemplateType;
 import java.net.URLEncoder;
@@ -34,6 +35,22 @@ public class MentorshipNotificationService {
         mentor.getEmail(),
         TemplateType.MENTOR_APPROVED,
         Map.of("mentorName", mentor.getFullName(), "mentorProfileUrl", mentorBaseUrl));
+  }
+
+  /**
+   * Sends a mentee approval notification email to the specified mentee.
+   *
+   * @param mentee the mentee to notify
+   */
+  public void sendMenteeApprovalEmail(final Mentee mentee) {
+    final String menteeBaseUrl =
+        notificationConfig.getMenteeProfileUrl()
+            + URLEncoder.encode(mentor.getFullName(), StandardCharsets.UTF_8);
+
+    sendNotification(
+        mentee.getEmail(),
+        TemplateType.MENTEE_PROFILE_APPROVED,
+        Map.of("menteeName", mentee.getFullName(), "mentorProfileUrl", mentorBaseUrl));
   }
 
   /**

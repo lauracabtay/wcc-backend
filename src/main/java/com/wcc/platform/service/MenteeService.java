@@ -2,12 +2,16 @@ package com.wcc.platform.service;
 
 import com.wcc.platform.configuration.MentorshipConfig;
 import com.wcc.platform.domain.exceptions.InvalidMentorshipTypeException;
+import com.wcc.platform.domain.exceptions.MemberNotFoundException;
 import com.wcc.platform.domain.exceptions.MenteeRegistrationLimitException;
+import com.wcc.platform.domain.exceptions.MenteeStatusException;
 import com.wcc.platform.domain.exceptions.MentorshipCycleClosedException;
+import com.wcc.platform.domain.platform.member.ProfileStatus;
 import com.wcc.platform.domain.platform.mentorship.CycleStatus;
 import com.wcc.platform.domain.platform.mentorship.Mentee;
 import com.wcc.platform.domain.platform.mentorship.MenteeApplication;
 import com.wcc.platform.domain.platform.mentorship.MenteeRegistration;
+import com.wcc.platform.domain.platform.mentorship.Mentor;
 import com.wcc.platform.domain.platform.mentorship.MentorshipCycle;
 import com.wcc.platform.domain.platform.mentorship.MentorshipCycleEntity;
 import com.wcc.platform.domain.platform.mentorship.MentorshipType;
@@ -19,6 +23,7 @@ import com.wcc.platform.repository.MenteeRepository;
 import com.wcc.platform.repository.MentorshipCycleRepository;
 import java.time.Year;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -77,6 +82,30 @@ public class MenteeService {
     return createMenteeAndApplications(filteredRegistrations, cycle);
   }
 
+  /**
+   * Activate a pending mentee by setting their status to ACTIVE.
+   *
+   * @param menteeId mentee's unique identifier
+   * @return mentee with active status
+   * @throws MemberNotFoundException if mentee is not found
+   * @throws MenteeStatusException if mentor is already active
+   */
+  public Mentor activateMentor(final Long menteeId) {
+    final Optional<Mentee> menteeOptional = menteeRepository.findById(menteeId);
+    final var mentee = menteeOptional.orElseThrow(() -> new MemberNotFoundException(menteeId));
+
+    if (mentee.getProfileStatus() == ProfileStatus.ACTIVE) {
+      throw new MenteeStatusException("Mentee with ID " + menteeId + " is already active");
+    }
+
+    final Mentee activatedMentee =
+        menteeRepository.updateProfileStatus(menteeId, ProfileStatus.ACTIVE);
+
+    notificationService.sendMentorApprovalEmail(activatedMentee);
+
+    return activatedMentor;
+  }
+
   private Mentee createMenteeAndApplications(
       final MenteeRegistration menteeRegistration, final MentorshipCycleEntity cycle) {
     final var menteeToBeSaved = menteeRegistration.mentee();
@@ -98,7 +127,7 @@ public class MenteeService {
               .companyName(menteeToBeSaved.getCompanyName())
               .images(menteeToBeSaved.getImages())
               .network(menteeToBeSaved.getNetwork())
-              .profileStatus(menteeToBeSaved.getProfileStatus())
+              .profileStatus(ProfileStatus.PENDING)
               .skills(menteeToBeSaved.getSkills())
               .spokenLanguages(menteeToBeSaved.getSpokenLanguages())
               .bio(menteeToBeSaved.getBio())

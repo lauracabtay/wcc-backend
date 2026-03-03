@@ -2,6 +2,7 @@ package com.wcc.platform.repository.postgres.mentorship;
 
 import com.wcc.platform.domain.cms.attributes.MentorshipFocusArea;
 import com.wcc.platform.domain.exceptions.MenteeNotSavedException;
+import com.wcc.platform.domain.platform.member.ProfileStatus;
 import com.wcc.platform.domain.platform.mentorship.Mentee;
 import com.wcc.platform.domain.platform.mentorship.Skills;
 import com.wcc.platform.repository.MemberRepository;
@@ -35,6 +36,8 @@ public class PostgresMenteeRepository implements MenteeRepository {
   private static final String SQL_UPDATE_MENTEE =
       "UPDATE mentees SET mentees_profile_status = ?, bio = ?, years_experience = ?, "
           + "spoken_languages = ? WHERE mentee_id = ?";
+  private static final String SQL_SET_MENTEE_STATUS =
+      "UPDATE mentees SET mentees_profile_status = ? WHERE mentee_id = ?";
   private static final String SQL_DELETE_TECH_AREAS =
       "DELETE FROM mentee_technical_areas WHERE mentee_id = ?";
   private static final String SQL_DELETE_LANGUAGES =
@@ -164,5 +167,12 @@ public class PostgresMenteeRepository implements MenteeRepository {
     for (final MentorshipFocusArea focus : menteeSkills.mentorshipFocus()) {
       jdbc.update(INSERT_FOCUS_AREAS, memberId, focus.getFocusId());
     }
+  }
+
+  @Override
+  @Transactional
+  public Mentee updateProfileStatus(final Long menteeId, final ProfileStatus profileStatus) {
+    jdbc.update(SQL_SET_MENTEE_STATUS, profileStatus.getStatusId(), menteeId);
+    return findById(menteeId).orElse(null);
   }
 }

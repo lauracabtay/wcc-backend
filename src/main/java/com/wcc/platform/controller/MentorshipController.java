@@ -123,4 +123,17 @@ public class MentorshipController {
     return new ResponseEntity<>(
         menteeService.saveRegistration(menteeRegistration), HttpStatus.CREATED);
   }
+
+  /**
+   * API to accept mentee registration.
+   *
+   * @param menteeId mentee's unique identifier
+   * @return updated mentee with active status.
+   */
+  @PatchMapping("/mentees/{menteeId}/accept")
+  @Operation(summary = "API to accept mentee registration")
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<Mentee> acceptMentee(@Valid @PathVariable final Long menteeId) {
+    return new ResponseEntity<>(menteeService.activateMentee(mentorId), HttpStatus.OK);
+  }
 }
